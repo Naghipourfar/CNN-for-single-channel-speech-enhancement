@@ -5,14 +5,14 @@ Class audioreader
 
 '''
 
-import tensorflow as tf
-import librosa
-import threading
-import numpy as np
 import fnmatch
 import os
 import random
-import ipdb
+import threading
+
+import librosa
+import numpy as np
+import tensorflow as tf
 from numpy.lib import stride_tricks
 
 
@@ -116,7 +116,7 @@ class Audio_reader(object):
                     rep_time = int(np.floor(noise_len / audio_len))
                     left_len = noise_len - audio_len * rep_time
                     temp_data = np.tile(audio_org, [1, rep_time])
-                    temp_data.shape = (temp_data.shape[1], )
+                    temp_data.shape = (temp_data.shape[1],)
                     audio = np.hstack((
                         temp_data, audio_org[:left_len]))
                     noise = np.array(noise_org)
@@ -124,7 +124,7 @@ class Audio_reader(object):
                     rep_time = int(np.floor(audio_len / noise_len))
                     left_len = audio_len - noise_len * rep_time
                     temp_data = np.tile(noise_org, [1, rep_time])
-                    temp_data.shape = (temp_data.shape[1], )
+                    temp_data.shape = (temp_data.shape[1],)
                     noise = np.hstack((
                         temp_data, noise_org[:left_len]))
                     audio = np.array(audio_org)
@@ -152,7 +152,7 @@ class Audio_reader(object):
                     sess.run(
                         self.enqueue_many,
                         feed_dict={self.sample_placeholder_many:
-                                   data_frames})
+                                       data_frames})
                     count += num_iter
                 if not self.is_val and i % 100 == 0:
                     print('epoch %d' % N_epoch)
@@ -165,6 +165,6 @@ class Audio_reader(object):
         '''start the threads'''
         for i in range(num_thread):
             thread = threading.Thread(
-                target=self.thread_main, args=(sess, ))
+                target=self.thread_main, args=(sess,))
             thread.daemon = True  # Thread will close when parent quits.
             thread.start()

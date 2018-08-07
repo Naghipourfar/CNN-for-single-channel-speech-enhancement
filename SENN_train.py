@@ -6,12 +6,13 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-from datetime import datetime
-import os.path
 import time
-import ipdb
+from datetime import datetime
+
 import numpy as np
+import os.path
 import tensorflow as tf
+
 import SENN
 import audio_reader
 
@@ -154,8 +155,8 @@ def train():
             format_str = (
                 '%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
                 'sec/batch)')
-            print (format_str % (datetime.now(), step, loss_value,
-                                 examples_per_sec, sec_per_batch))
+            print(format_str % (datetime.now(), step, loss_value,
+                                examples_per_sec, sec_per_batch))
 
         # write summary every 100 step
         if step % 100 == 0:

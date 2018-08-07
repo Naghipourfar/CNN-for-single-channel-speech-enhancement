@@ -9,12 +9,11 @@ Class SENN: speech enhancement neural network
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+
+import numpy as np
 # import os
-import ipdb
 # import sys
 import tensorflow as tf
-import numpy as np
-
 
 log10_fac = 1 / np.log(10)
 
@@ -53,6 +52,7 @@ def bias_variable(shape):
 
 class SE_NET(object):
     """Class:speech enhancement net"""
+
     def __init__(self, batch_size, NEFF, N_IN, N_OUT, DECAY=0.999):
         '''NEFF: number of effective FFT points
         N_IN: number of input frames into the nets
@@ -112,7 +112,7 @@ class SE_NET(object):
             [tf.reshape(
                 speech_f[i][self.N_IN - 1][0:self.NEFF],
                 [1, self.NEFF])
-             for i in range(0, self.batch_size, 1)])
+                for i in range(0, self.batch_size, 1)])
         # do per image whitening (not batch normalization!)
         images_reshape = tf.transpose(tf.reshape(
             images, [self.batch_size, -1]))

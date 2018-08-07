@@ -2,12 +2,11 @@
 Evaluate a trained model using a noisy speech
 '''
 
-import tensorflow as tf
-import numpy as np
-import ipdb
-from matplotlib import pyplot as plt
-from numpy.lib import stride_tricks
 import librosa
+import numpy as np
+import tensorflow as tf
+from numpy.lib import stride_tricks
+
 import SENN
 
 
@@ -66,7 +65,7 @@ if audio_len < noise_len:
     rep_time = int(np.floor(noise_len / audio_len))
     left_len = noise_len - audio_len * rep_time
     temp_data = np.tile(audio_org, [1, rep_time])
-    temp_data.shape = (temp_data.shape[1], )
+    temp_data.shape = (temp_data.shape[1],)
     audio = np.hstack((
         temp_data, audio_org[:left_len]))
     noise = np.array(noise_org)
@@ -74,7 +73,7 @@ else:
     rep_time = int(np.floor(audio_len / noise_len))
     left_len = audio_len - noise_len * rep_time
     temp_data = np.tile(noise_org, [1, rep_time])
-    temp_data.shape = (temp_data.shape[1], )
+    temp_data.shape = (temp_data.shape[1],)
     noise = np.hstack((
         temp_data, noise_org[:left_len]))
     audio = np.array(audio_org)
@@ -92,7 +91,6 @@ data_len = in_data.shape[0]
 assert NEFF == in_data.shape[1], 'Uncompatible image height'
 out_len = data_len - N_IN + 1
 out_audio = np.zeros(shape=[(out_len - 1) * NMOVE + NFFT])
-
 
 init_op = tf.initialize_all_variables()
 
@@ -119,14 +117,13 @@ saver = tf.train.Saver(tf.all_variables())
 
 summary_op = tf.merge_all_summaries()
 
-
 with tf.Session() as sess:
     # restore the model
     saver.restore(sess, '/home/nca/Downloads/speech_enhencement_large/speech_enhencement2/SENN2/model.ckpt-1760000')
     print("Model restored")
     # sess.run(tf.initialize_all_variables())
     i = 0
-    while(i < out_len):
+    while (i < out_len):
         # show progress
         if i % 100 == 0:
             print('frame num: %d' % (i))
@@ -142,7 +139,7 @@ with tf.Session() as sess:
         inf_frame = inf_frame * np.sqrt(data_var) + data_mean
         out_amp_tmp = 10 ** (inf_frame / 20) / 100
         out_stft = out_amp_tmp * phase_data[i + N_IN - 1][:]
-        out_stft.shape = (NEFF, )
+        out_stft.shape = (NEFF,)
         con_data = out_stft[-2:0:-1].conjugate()
         out_amp = np.concatenate((out_stft, con_data))
         frame_out_tmp = np.fft.ifft(out_amp).astype(np.float64)
