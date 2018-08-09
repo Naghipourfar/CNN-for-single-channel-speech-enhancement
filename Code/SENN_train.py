@@ -13,8 +13,7 @@ import numpy as np
 import os.path
 import tensorflow as tf
 
-import SENN
-import audio_reader
+from Code import SENN, audio_reader
 
 LR = 0.00001
 
@@ -23,23 +22,23 @@ FLAGS = tf.app.flags.FLAGS
 # store the check points
 tf.app.flags.DEFINE_string(
     'train_dir',
-    '/home/nca/Downloads/speech_enhencement_large/speech_enhencement2/SENN2',
+    '../Results/event_logs/',
     """Directory where to write event logs """)
 # write summary about the loss and etc.
 tf.app.flags.DEFINE_string(
     'sum_dir',
-    '/home/nca/Downloads/speech_enhencement_large/speech_enhencement2/SENN2/sum2',
+    '../Results/Summaries/',
     """Directory where to write summary """)
 # noise directory
 tf.app.flags.DEFINE_string(
     'noise_dir',
-    '/media/nca/data/raw_data/Nonspeech_train/',
+    '../Data/audiosample/',
     # '/home/nca/Downloads/raw_data/Nonspeech_train/',
     """Directory where to load noise """)
 # speech directory
 tf.app.flags.DEFINE_string(
     'speech_dir',
-    '/media/nca/data/raw_data/speech_train/',
+    './Data/audiosample/',
     # '/home/nca/Downloads/raw_data/speech_train/',
     """Directory where to load speech """)
 # validation noise directory

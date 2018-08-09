@@ -7,7 +7,7 @@ import numpy as np
 import tensorflow as tf
 from numpy.lib import stride_tricks
 
-import SENN
+from Code import SENN
 
 
 def stft(sig, frameSize, overlapFac=0.75, window=np.hanning):
