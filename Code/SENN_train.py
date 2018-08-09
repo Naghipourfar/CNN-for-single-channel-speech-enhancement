@@ -44,7 +44,7 @@ tf.app.flags.DEFINE_string(
 # validation noise directory
 tf.app.flags.DEFINE_string(
     'val_noise_dir',
-    '/media/nca/data/raw_data/Nonspeech_test/',
+    './Data/audiosample',
     # '/home/nca/Downloads/raw_data/Nonspeech_test/',
     """Directory where to load noise """)
 # validation speech directory
