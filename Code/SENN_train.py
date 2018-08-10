@@ -50,7 +50,7 @@ tf.app.flags.DEFINE_string(
 # validation speech directory
 tf.app.flags.DEFINE_string(
     'val_speech_dir',
-    '/media/nca/data/raw_data/speech_test/',
+    './Data/audiosample/',
     # '/home/nca/Downloads/raw_data/speech_test/',
     """Directory where to load noise """)
 tf.app.flags.DEFINE_integer('max_steps', 2000000000,
