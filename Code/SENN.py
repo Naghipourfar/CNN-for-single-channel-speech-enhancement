@@ -66,10 +66,12 @@ class SE_NET(object):
         self.DECAY = DECAY
 
     def inputs(self, raw_data_batch):
-        '''transform the raw data_batch into
-        the input for the nets
-        it runs really fast and we don't need to store
-        all the mixed samples'''
+        """
+            transform the raw data_batch into
+            the input for the nets
+            it runs really fast and we don't need to store
+            all the mixed samples
+        """
         # ipdb.set_trace()
         # transpose for FFT
         # shape:
@@ -108,11 +110,11 @@ class SE_NET(object):
         # batch, N_in, NEFF
         images = data_f
         targets = tf.concat(
-            0,
             [tf.reshape(
                 speech_f[i][self.N_IN - 1][0:self.NEFF],
                 [1, self.NEFF])
-                for i in range(0, self.batch_size, 1)])
+                for i in range(0, self.batch_size, 1)],
+            0)
         # do per image whitening (not batch normalization!)
         images_reshape = tf.transpose(tf.reshape(
             images, [self.batch_size, -1]))
@@ -131,9 +133,9 @@ class SE_NET(object):
         return images_norm, targets_norm
 
     def _batch_norm_wrapper(self, inputs, is_trianing, epsilon=1e-6):
-        '''wrap up all the operations needed for batch norm
+        """wrap up all the operations needed for batch norm
         is_training: true -> using batch property
-                     false -> using global(population) property'''
+                     false -> using global(population) property"""
         decay = self.DECAY
         scale = tf.Variable(tf.ones(inputs.get_shape()[-1]))
         beta = tf.Variable(tf.zeros(inputs.get_shape()[-1]))

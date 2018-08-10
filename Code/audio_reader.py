@@ -1,9 +1,9 @@
-'''
+"""
 Class audioreader
     find the speech and noise in the files and enqueue the audios
     that have been read
 
-'''
+"""
 
 import fnmatch
 import os
@@ -16,10 +16,13 @@ import tensorflow as tf
 from numpy.lib import stride_tricks
 
 
-def find_files(directory, pattern=['*.wav', '*.WAV']):
-    '''find files in the directory'''
+def find_files(directory, pattern=None):
+    """find files in the directory"""
+    if pattern is None:
+        pattern = ['*.wav', '*.WAV']
+
     files = []
-    for root, dirnames, filenames in os.walk(directory):
+    for root, dirnames, filenames in os.walk(os.path.abspath(directory)):
         for filename in fnmatch.filter(filenames, pattern[0]):
             files.append(os.path.join(root, filename))
         for filename in fnmatch.filter(filenames, pattern[1]):
@@ -27,7 +30,23 @@ def find_files(directory, pattern=['*.wav', '*.WAV']):
     return files
 
 
-class Audio_reader(object):
+def find_files_recursive(directory, pattern=None, recursive=True):
+    if recursive is False:
+        find_files(directory, pattern)
+    else:
+        if pattern is None:
+            pattern = ['*.WAV', '*.wav']
+
+        files = []
+        for root, dirnames, filenames in os.walk(os.path.abspath(directory)):
+            for filename in fnmatch.filter(filenames, pattern[0]):
+                files.append(os.path.join(root, filename))
+            for filename in fnmatch.filter(filenames, pattern[1]):
+                files.append(os.path.join(root, filename))
+        return files
+
+
+class AudioReader(object):
     """reading and framing"""
 
     def __init__(self,
@@ -38,9 +57,9 @@ class Audio_reader(object):
                  frame_length,
                  frame_move,
                  is_val):
-        '''coord: tensorflow coordinator
+        """coord: tensorflow coordinator
         N_IN: number of input frames presented to DNN
-        frame_move: hopsize'''
+        frame_move: hopsize"""
         self.audio_dir = audio_dir
         self.noise_dir = noise_dir
         self.coord = coord
@@ -59,8 +78,8 @@ class Audio_reader(object):
                 200000, tf.float32, shapes=(self.N_IN, 2, frame_length))
         self.enqueue_many = self.q.enqueue_many(
             self.sample_placeholder_many + 0)
-        self.audiofiles = find_files(audio_dir)
-        self.noisefiles = find_files(noise_dir)
+        self.audiofiles = find_files_recursive(audio_dir)
+        self.noisefiles = find_files_recursive(noise_dir)
         print('%d speech found' % len(self.audiofiles))
         print('%d noise found' % len(self.noisefiles))
         # ipdb.set_trace()
