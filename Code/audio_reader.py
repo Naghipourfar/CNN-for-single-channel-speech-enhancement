@@ -85,7 +85,9 @@ class AudioReader(object):
         # ipdb.set_trace()
 
     def dequeue(self, num_elements):
-        '''dequeue many element at once'''
+        """
+            dequeue many element at once
+        """
         output = self.q.dequeue_many(num_elements)
         return output
 
@@ -104,27 +106,29 @@ class AudioReader(object):
             librosa.output.write_wav(file, audio, sr)
 
     def thread_main(self, sess):
-        '''thread for reading files and enqueue the original
-        signal'''
+        """
+            thread for reading files and enqueue the original signal
+        """
         stop = False
         SNR = [0.0, 0.1, 0.4]  # possible multiply fac adding the signals
         # SNR = [0]
         N_epoch = 1
         N_audio_files = len(self.audiofiles)
         N_noise_files = len(self.noisefiles)
-        # total posible combinations
+        # total possible combinations
         N_tot = N_noise_files * N_audio_files
         # index: noise audio N_snr
         count = 0
         while not stop:
-            # randomly comnbine the speech and noise
-            ids = range(N_tot)
-            random.shuffle(ids)
+            # randomly combine the speech and noise
+            ids = list(range(N_tot))
+            random.shuffle(ids)  # shuffles inplace
             for i in ids:
                 # ipdb.set_trace()
-                noise_id = i / (N_audio_files)
+                noise_id = i // N_audio_files
                 audio_id = i - N_audio_files * noise_id
                 audio_org, _ = librosa.load(self.audiofiles[audio_id], sr=None)
+                print("Voice\t:\t%s" % self.audiofiles[audio_id])
                 noise_org, _ = librosa.load(self.noisefiles[noise_id], sr=None)
                 audio_len = len(audio_org)
                 noise_len = len(noise_org)
@@ -150,8 +154,8 @@ class AudioReader(object):
 
                 # number of generated frames
                 num_iter = np.floor(
-                    (tot_len - self.frame_length) / self.frame_move -
-                    self.N_IN)
+                    (tot_len - self.frame_length) / self.frame_move - self.N_IN
+                )
                 # generate for each multiply factor
                 for mul_fac in SNR:
                     noisy_speech = audio + mul_fac * noise
@@ -161,17 +165,17 @@ class AudioReader(object):
                     data = np.concatenate((noisy_speech, audio))
                     data_frames = stride_tricks.as_strided(
                         data,
-                        shape=(num_iter, self.N_IN, 2, self.frame_length),
+                        shape=(int(num_iter), self.N_IN, 2, self.frame_length),
                         strides=(
                             data.strides[1] * self.frame_move,
                             data.strides[1] * self.frame_move,
                             data.strides[0],
                             data.strides[1]))
+
                     # enqueue the signals
                     sess.run(
                         self.enqueue_many,
-                        feed_dict={self.sample_placeholder_many:
-                                       data_frames})
+                        feed_dict={self.sample_placeholder_many: data_frames})
                     count += num_iter
                 if not self.is_val and i % 100 == 0:
                     print('epoch %d' % N_epoch)
@@ -181,7 +185,9 @@ class AudioReader(object):
             np.save('sampleN.npy', count)
 
     def start_threads(self, sess, num_thread=1):
-        '''start the threads'''
+        """
+            start the threads
+        """
         for i in range(num_thread):
             thread = threading.Thread(
                 target=self.thread_main, args=(sess,))

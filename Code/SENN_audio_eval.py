@@ -1,6 +1,6 @@
-'''
+"""
 Evaluate a trained model using a noisy speech
-'''
+"""
 
 import librosa
 import numpy as np
@@ -10,7 +10,7 @@ from numpy.lib import stride_tricks
 from Code import SENN
 
 
-def stft(sig, frameSize, overlapFac=0.75, window=np.hanning):
+def STFT(sig, frameSize, overlapFac=0.75, window=np.hanning):
     """ short time fourier transform of audio signal """
     win = window(frameSize)
     hopSize = int(frameSize - np.floor(overlapFac * frameSize))
@@ -18,7 +18,7 @@ def stft(sig, frameSize, overlapFac=0.75, window=np.hanning):
     # samples = np.append(np.zeros(np.floor(frameSize / 2.0)), sig)
     samples = np.array(sig, dtype='float64')
     # cols for windowing
-    cols = np.ceil((len(samples) - frameSize) / float(hopSize)) + 1
+    cols = int(np.ceil((len(samples) - frameSize) / float(hopSize)) + 1)
     # zeros at end (thus samples can be fully covered by frames)
     samples = np.append(samples, np.zeros(frameSize))
     frames = stride_tricks.as_strided(
@@ -33,7 +33,7 @@ FLAGS = tf.app.flags.FLAGS
 # directory to load the model
 tf.app.flags.DEFINE_string(
     'train_dir',
-    '/home/nca/Downloads/speech_enhencement/speech_enhencement/SENN2',
+    '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Results/event_logs/',
     """Directory where to write event logs """
     """and checkpoint.""")
 
@@ -45,13 +45,13 @@ NFFT = 256
 N_OUT = 1
 Overlap = 0.75
 mul_fac = 0.2
-NMOVE = (1 - Overlap) * NFFT
-audio_dir = '/media/nca/data/raw_data/speech_train/TRAIN_DR1_FCJF0_SA1.WAV'
-noise_dir = '/media/nca/data/raw_data/Nonspeech_train/n58.wav'
+NMOVE = int((1 - Overlap) * NFFT)
+audio_dir = '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Data/TIMIT/TRAIN/DR1/FCJF0/SA1.WAV'
+noise_dir = '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Data/Noise/noise-1.wav'
 # dir to write the clean speech
-out_org_dir = '/home/nca/Downloads/speech_enhencement_large/speech_enhencement2/SENN2/test_o.wav'
+out_org_dir = '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Results/Voices/test_o.wav'
 # dir to write the clean speech inference
-out_audio_dir = '/home/nca/Downloads/speech_enhencement_large/speech_enhencement2/SENN2/test.wav'
+out_audio_dir = '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Results/Voices/test.wav'
 
 audio_org, sr = librosa.load(audio_dir, sr=None)
 noise_org, sr = librosa.load(noise_dir, sr=None)
@@ -80,7 +80,7 @@ else:
 
 in_audio = (audio + mul_fac * noise)
 
-in_stft = stft(in_audio, NFFT, Overlap)
+in_stft = STFT(in_audio, NFFT, Overlap)
 in_stft_amp = np.maximum(np.abs(in_stft), 1e-5)
 in_data = 20. * np.log10(in_stft_amp * 100)
 # ipdb.set_trace()
@@ -90,7 +90,7 @@ phase_data = in_stft / in_stft_amp
 data_len = in_data.shape[0]
 assert NEFF == in_data.shape[1], 'Uncompatible image height'
 out_len = data_len - N_IN + 1
-out_audio = np.zeros(shape=[(out_len - 1) * NMOVE + NFFT])
+out_audio = np.zeros(shape=[int((out_len - 1) * NMOVE + NFFT)])
 
 init_op = tf.initialize_all_variables()
 
@@ -115,15 +115,15 @@ loss = SE_Net.loss(inf_targets, targets)
 
 saver = tf.train.Saver(tf.all_variables())
 
-summary_op = tf.merge_all_summaries()
+# summary_op = tf.merge_all_summaries()
 
 with tf.Session() as sess:
     # restore the model
-    saver.restore(sess, '/home/nca/Downloads/speech_enhencement_large/speech_enhencement2/SENN2/model.ckpt-1760000')
+    saver.restore(sess, '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Results/event_logs/model.ckpt-10000')
     print("Model restored")
     # sess.run(tf.initialize_all_variables())
     i = 0
-    while (i < out_len):
+    while i < out_len:
         # show progress
         if i % 100 == 0:
             print('frame num: %d' % (i))

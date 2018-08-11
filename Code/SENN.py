@@ -208,7 +208,7 @@ class SE_NET(object):
     def loss(self, inf_targets, targets):
         '''l2 loss for the log spectrum'''
         loss_v = tf.nn.l2_loss(inf_targets - targets) / self.batch_size
-        tf.scalar_summary('loss', loss_v)
+        # tf.scalar_summary('loss', loss_v)
         # loss_merge = tf.cond(
         #     is_val, lambda: tf.scalar_summary('val_loss_batch', loss_v),
         #     lambda: tf.scalar_summary('loss', loss_v))
