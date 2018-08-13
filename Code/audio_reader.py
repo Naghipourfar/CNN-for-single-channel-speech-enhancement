@@ -177,7 +177,7 @@ class AudioReader(object):
                         self.enqueue_many,
                         feed_dict={self.sample_placeholder_many: data_frames})
                     count += num_iter
-                if not self.is_val and i % 100 == 0:
+                if not self.is_val and i % 50 == 0:
                     print('epoch %d' % N_epoch)
             if not self.is_val:
                 print('end of an epoch with %d samples'

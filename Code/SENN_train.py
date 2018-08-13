@@ -9,20 +9,19 @@ from __future__ import print_function
 import os
 import time
 from datetime import datetime
-
 import numpy as np
 import tensorflow as tf
 
 from Code import SENN, audio_reader
 
-LR = 0.00001
+LR = 0.001
 
 FLAGS = tf.app.flags.FLAGS
 
 # store the check points
 tf.app.flags.DEFINE_string(
     'train_dir',
-    '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Results/event_logs/',
+    '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Results/event_logs/Old-3/',
     """Directory where to write event logs """)
 
 # write summary about the loss and etc.
@@ -34,7 +33,7 @@ tf.app.flags.DEFINE_string(
 # noise directory
 tf.app.flags.DEFINE_string(
     'noise_dir',
-    '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Data/Noise/',
+    '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Data/Noise/train/',
     # '/home/nca/Downloads/raw_data/Nonspeech_train/',
     """Directory where to load noise """)
 
@@ -48,7 +47,7 @@ tf.app.flags.DEFINE_string(
 # validation noise directory
 tf.app.flags.DEFINE_string(
     'val_noise_dir',
-    '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Data/Noise/',
+    '/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Data/Noise/test/',
     # '/home/nca/Downloads/raw_data/Nonspeech_test/',
     """Directory where to load noise """)
 
@@ -59,7 +58,7 @@ tf.app.flags.DEFINE_string(
     # '/home/nca/Downloads/raw_data/speech_test/',
     """Directory where to load noise """)
 
-tf.app.flags.DEFINE_integer('max_steps', 11000,
+tf.app.flags.DEFINE_integer('max_steps', 50000,
                             """Number of batches to run.""")
 
 NFFT = 256  # number of fft points
@@ -68,13 +67,14 @@ frame_move = 64  # hop size
 batch_size = 128
 N_IN = 8  # number of frames presented to the net
 N_OUT = 1  # output frame number
-validation_samples = 848824  # total numbers of the validation set
+validation_samples = 1680  # total numbers of the validation set
 batch_of_val = np.floor(validation_samples / batch_size)
 # after all the batches, dequeue the left to make sure
 # all the samples in the validation set are the same
 val_left_to_dequeue = validation_samples - batch_of_val * batch_size
-val_loss = np.zeros([1000000])
-np.datetime_as_string()
+val_loss = []
+train_loss = []
+
 
 def train():
     coord = tf.train.Coordinator()
@@ -129,8 +129,8 @@ def train():
 
     sess.run(init)
 
-    audio_rd.start_threads(sess)  # start audio reading threads
-    val_audio_rd.start_threads(sess)
+    audio_rd.start_threads(sess, num_thread=4)  # start audio reading threads
+    val_audio_rd.start_threads(sess, num_thread=4)
 
     # tf.train.start_queue_runners(sess=sess)
 
@@ -139,7 +139,6 @@ def train():
     #     sess.graph)
 
     # to track the times of validation
-    val_loss_id = 0
     for step in range(FLAGS.max_steps):
 
         start_time = time.time()
@@ -152,7 +151,7 @@ def train():
 
         assert not np.isnan(loss_value), 'Model diverged with loss = NaN'
         # display training loss every 100 steps
-        if step % 100 == 0:
+        if step % 50 == 0:
             # if step % 10000000 == 0:
             #     ipdb.set_trace()
             num_examples_per_step = batch_size
@@ -162,6 +161,9 @@ def train():
             format_str = (
                 '%s: step %d, loss = %.2f (%.1f examples/sec; %.3f '
                 'sec/batch)')
+            train_loss.append(loss_value)
+            np.savetxt(fname="/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Results/event_logs/Old-3/train_loss.csv", X=np.array(train_loss), delimiter=',')
+
             print(format_str % (datetime.now(), step, loss_value,
                                 examples_per_sec, sec_per_batch))
 
@@ -172,9 +174,9 @@ def train():
         #     summary_writer.add_summary(summary_str, step)
 
         # do validation every 100000 step
-        if step % 100000 == 0 or (step + 1) == FLAGS.max_steps:
+        if step % 50 == 0 or (step + 1) == FLAGS.max_steps:
             np_val_loss = 0
-            print('Doing validation, please wait ...')
+            # print('Doing validation, please wait ...')
             for j in range(int(batch_of_val)):
                 # images_batch, targets_batch, inf_batch, temp_loss = sess.run(
                 #     [images, targets, inf_targets, loss],
@@ -186,12 +188,12 @@ def train():
             val_audio_rd.dequeue(val_left_to_dequeue)
             mean_val_loss = np_val_loss / batch_of_val
             print('validation loss %.2f' % mean_val_loss)
-            val_loss[val_loss_id] = mean_val_loss
-            val_loss_id += 1
-            np.save('val_loss2.npy', val_loss)
+            val_loss.append(mean_val_loss)
+            np.savetxt(fname="/Users/Future/Desktop/Summer-2018/Research-Labs/DML/CNN-for-single-channel-speech-enhancement/Results/event_logs/Old-3/val_loss.csv", X=np.array(val_loss), delimiter=',')
+            # np.save('val_loss2.npy', val_loss)
 
-        # store the model every 10000 step
-        if step % 10000 == 0 or (step + 1) == FLAGS.max_steps:
+        # store the model every 2500 step
+        if step % 2500 == 0 or (step + 1) == FLAGS.max_steps:
             checkpoint_path = os.path.join(FLAGS.train_dir, 'model.ckpt')
             saver.save(sess, checkpoint_path, global_step=step)
 

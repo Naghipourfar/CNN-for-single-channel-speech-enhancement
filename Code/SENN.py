@@ -217,7 +217,7 @@ class SE_NET(object):
 
     def train(self, loss, lr):
         '''optimizer'''
-        # optimizer = tf.train.GradientDescentOptimizer(0.01)
+        # optimizer = tf.train.GradientDescentOptimizer(0.001)
         optimizer = tf.train.AdamOptimizer(
             learning_rate=lr,
             beta1=0.9,
