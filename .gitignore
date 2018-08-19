@@ -1,8 +1,10 @@
 # Created by .ignore support plugin (hsz.mobi)
-.idea/workspace.xml
 Code/.ipynb_checkpoints/
 Code/Untitled.ipynb
 Data/
 Results/
 __pycache__/
 val_loss2.npy
+/Data/
+/Results/
+.idea/
