@@ -9,7 +9,7 @@ from __future__ import print_function
 import os
 import time
 from datetime import datetime
-import numpy as np
+import nفumpy as np
 import tensorflow as tf
 
 from Code import SENN, audio_reader
